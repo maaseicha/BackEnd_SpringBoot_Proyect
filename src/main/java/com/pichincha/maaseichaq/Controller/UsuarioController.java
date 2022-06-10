@@ -1,11 +1,16 @@
 package com.pichincha.maaseichaq.Controller;
 
 import com.pichincha.maaseichaq.Service.UsuarioService;
+import net.minidev.json.JSONObject;
+import netscape.javascript.JSObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.pichincha.maaseichaq.Entity.Usuario;
+import com.pichincha.maaseichaq.Entity.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -15,29 +20,28 @@ public class UsuarioController {
     UsuarioService usuarioService;
 
     @GetMapping("/listar")
-    public ArrayList<Usuario> obtenerUsuarios(){
-        return usuarioService.obtenerUsuarios();
+    public ResponseEntity<List<Usuario>> obtenerUsuarios(){
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.obtenerUsuarios());
     }
 
     @GetMapping(path = "/buscar/{id}")
-    public Optional<Usuario> obtenerUsuarioPorId(@PathVariable("id") Long id){
-        return usuarioService.obtenerPorId(id);
+    public ResponseEntity<Optional<Usuario>> obtenerUsuarioPorId(@PathVariable("id") Long id){
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.obtenerPorId(id));
     }
     @GetMapping("/cedula")
-    public Usuario obtenerUsuarioPorCedula(@RequestParam("cedula")String cedula){
-        return usuarioService.obtenerPorCedula(cedula);
+    public ResponseEntity<Usuario> obtenerUsuarioPorCedula(@RequestParam("cedula") String cedula){
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.obtenerPorCedula(cedula));
     }
     @DeleteMapping(path = "/del/{id}")
-    public String eliminarPorId(@PathVariable("id")Long id){
-        boolean ok = usuarioService.eliminarUsuario(id);
-        if (ok){
-            return "Se eliminó el usuario con el id ("+id+")";
-        }else{
-            return "No se pudo eliminar el usuario con el id ("+id+")";
-        }
+    public ResponseEntity<?> eliminarPorId(@PathVariable("id") Long id){
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.eliminarUsuario(id));
+    }
+    @PutMapping(path = "/update/{id}")
+    public  ResponseEntity<Usuario> updateUsuario(@PathVariable("id") Long id, @RequestBody Usuario usuario){
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.actualizarUsuario(id,usuario));
     }
     @PostMapping("/save")
-    public String guardarUsuario(@RequestBody Usuario usuario){
-        return usuarioService.guardarUsuario(usuario);
+    public ResponseEntity<Usuario> guardarUsuario(@RequestBody Usuario usuario){
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.guardarUsuario(usuario));
     }
 }

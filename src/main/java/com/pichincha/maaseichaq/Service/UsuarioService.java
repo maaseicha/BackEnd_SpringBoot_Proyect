@@ -1,59 +1,114 @@
 package com.pichincha.maaseichaq.Service;
 
 import com.pichincha.maaseichaq.Entity.Usuario;
+import com.pichincha.maaseichaq.ExceptionsProyect.Exception.BadRequestException;
+import com.pichincha.maaseichaq.ExceptionsProyect.Exception.NotFoundException;
 import com.pichincha.maaseichaq.Repository.UsuarioRepository;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UsuarioService implements UsuarioServicio {
     @Autowired
     UsuarioRepository usuarioRepository;
-    public ArrayList<Usuario> obtenerUsuarios(){
-        return  (ArrayList<Usuario>) usuarioRepository.findAll();
+    @Override
+    public List<Usuario> obtenerUsuarios(){
+        List<Usuario> users = (List<Usuario>) usuarioRepository.findAll();
+        if (users.size() > 0){
+            return users;
+        }else{
+            throw new BadRequestException("{\"message\":\"No existen usuarios\",\"status\":false}");
+        }
     }
-    public String guardarUsuario(Usuario usuario){
+    @Override
+    public Usuario guardarUsuario(Usuario usuario){
+        String mensaje;
         String cedula = usuario.getCedula();
         String email = usuario.getEmail();
         if (validarCedula(cedula)) {
             Usuario userEmail = usuarioRepository.findByEmail(email);
             Usuario userCedula = usuarioRepository.findByCedula(cedula);
             if (userCedula == null && userEmail == null) {
-                usuarioRepository.save(usuario);
-                return "Usuario registrado exitosamente";
+                return usuarioRepository.save(usuario);
             }
             if (userCedula != null) {
-                return "Ya existe un usuario con la cédula " + cedula;
+                mensaje = "Ya existe un usuario con la cédula " + cedula;
+                throw new BadRequestException(mensaje);
             }
             if (userEmail != null) {
-                return "Ya existe un usuario con el email " + email;
+                mensaje = "Ya existe un usuario con el email " + email;
+                throw new BadRequestException(mensaje);
             }
-            return "Usuario no registrado contactese con el admin";
+            mensaje = "Usuario no registrado contactese con el admin";
+            throw new BadRequestException(mensaje);
         }else {
-            return "La cédula es incorrecta";
+            mensaje = "La cédula "+cedula+" es incorrecta";
+            throw new BadRequestException(mensaje);
         }
     }
+    @Override
     public Optional<Usuario> obtenerPorId(Long id){
+        if (!usuarioRepository.existsById(id))
+            throw new NotFoundException("No existe el usuario con el id "+id);
         return usuarioRepository.findById(id);
     }
+    @Override
     public Usuario obtenerPorCedula(String cedula){
+        if (!usuarioRepository.existByCedula(cedula))
+            throw new NotFoundException("No existe el usuario con la cedula "+cedula);
         return usuarioRepository.findByCedula(cedula);
     }
+    @Override
     public Usuario obtenerPorEmail(String email){
+        if (!usuarioRepository.existByEmail(email))
+            throw new NotFoundException("No existe el usuario con el email "+email);
         return usuarioRepository.findByEmail(email);
     }
-    public Boolean eliminarUsuario(Long id){
-        try {
+    @Override
+    public String eliminarUsuario(Long id){
+        if (usuarioRepository.existsById(id)){
             usuarioRepository.deleteById(id);
-            return true;
-        }catch (Exception e){
-            return false;
+            return "{\"message\":\"Usuario eliminado exitosamente con el id "+id+"\",\"status\":true}";
+        }else{
+            throw new NotFoundException("{\"message\":\"No existe el usuario con el id "+id+"\",\"status\":false}");
         }
     }
-
+    @Override
+    public Usuario actualizarUsuario(Long id, Usuario usuario){
+        String mensaje = "";
+        Optional<Usuario> user = usuarioRepository.findById(id);
+        if (user.isPresent()){
+            if (usuario != null){
+                String cedUser = user.get().getCedula();
+                String cedUsuario = usuario.getCedula();
+                if (validarCedula(cedUsuario)){
+                    if (cedUser.equals(cedUsuario)) {
+                        usuario.setId(id);
+                        return usuarioRepository.save(usuario);
+                    }else{
+                        mensaje = "No se puede modificar la cedula";
+                        throw new BadRequestException(mensaje);
+                    }
+                }else{
+                    mensaje = "La cédula es incorrecta";
+                    throw new BadRequestException(mensaje);
+                }
+            }else{
+                mensaje = "Error de datos";
+                throw new BadRequestException(mensaje);
+            }
+        }else{
+            mensaje = "No se encontró al usuario con el id ("+id+")";
+            throw new NotFoundException(mensaje);
+        }
+    }
     private Boolean validarCedula(String cedula){
         boolean cedulaCorrecta;
         if (cedula.length() == 10) // ConstantesApp.LongitudCedula

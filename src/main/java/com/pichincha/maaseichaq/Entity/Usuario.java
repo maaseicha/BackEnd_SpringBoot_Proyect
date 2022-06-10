@@ -2,7 +2,7 @@ package com.pichincha.maaseichaq.Entity;
 
 
 import javax.persistence.*;
-import java.util.Date;
+import java.util.*;
 
 @Entity
 @Table(name = "usuario")
@@ -18,6 +18,9 @@ public class Usuario {
     private String direccion;
     private Date fecha_nacimiento;
     private Integer estado;
+
+    @OneToMany(mappedBy = "usuario")
+    private Set<Cuenta> cuenta;
 
     public Usuario(){
         super();
@@ -86,6 +89,10 @@ public class Usuario {
 
     public void setFecha_nacimiento(Date fecha_nacimiento) {
         this.fecha_nacimiento = fecha_nacimiento;
+    }
+
+    public Set<Cuenta> getCuenta() {
+        return cuenta;
     }
 
     public Integer getEstado() {
