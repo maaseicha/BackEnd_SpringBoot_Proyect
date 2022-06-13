@@ -1,7 +1,6 @@
 # BackEnd_SpringBoot_Proyect
 
-Proyecto realizado con **Spring Boot** java desde: https://start.spring.io
-
+Proyecto realizado con **Spring Boot** java desde: https://start.spring.io <br>
 --------------------------Configuración en Spring initialzr-----------------------
 * Language: Java
 * Proyect: Gradle Proyect
@@ -44,4 +43,6 @@ spring.datasource.url=jdbc:h2:mem:testdb<br>
 spring.datasource.driverClassName=org.h2.Driver<br>
 spring.datasource.username=test<br>
 spring.datasource.password=test<br>
-spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect<br><br>
+--------------------------**Diagrama Lógico del ejercicio**------------------------<br>
+![Diagrama Logico](https://dannjeans.com/back-end/logico_pichincha.png)
